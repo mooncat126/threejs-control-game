@@ -1,4 +1,5 @@
 # Three.js Wolf Control Game
+[English](./README.md) | [简体中文](./README_zh.md)
 
 An interactive 3D game built with Three.js and Next.js, featuring a controllable wolf model and various 3D objects.
 
