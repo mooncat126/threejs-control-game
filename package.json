@@ -1,8 +1,11 @@
 {
-  "name": "my-threejs-app",
+  "name": "threejs-wolf-control-game",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://mooncat126.github.io/threejs-next-control-game",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
