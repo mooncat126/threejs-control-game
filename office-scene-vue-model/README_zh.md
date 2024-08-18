@@ -5,11 +5,12 @@
 
 ## 功能特色
 
-预览地址: https://threejs-wolf-control.netlify.app/
+预览地址: https://threejs-office-scene.netlify.app/
 
-![画面収録 2024-08-16 22 11 27 (3)](https://github.com/user-attachments/assets/5b8fe404-d1e8-40a9-96a3-30e1be14f605)
+![画面収録 2024-08-18 20 20 27](https://github.com/user-attachments/assets/2637131b-a274-4607-8080-8bacee3c5a19)
 
-- **🐺 可控的台灯**: 
+
+- **💡 可控的台灯**: 
   - 点击台灯以打开或关闭
 - **✨ 3D 环境**: 
   - 包含动态背景和地面平面。
