@@ -1,3 +1,9 @@
+# Three.js Control Game Examples
+
+This repository is dedicated to storing various Three.js examples. 
+Each example demonstrates different features and functionalities of Three.js in interactive 3D environments. 
+For more details, please refer to the README files in each folder.
+
 # Three.js Wolf Control Game
 [English](./README.md) | [简体中文](./README_zh.md)
 
@@ -20,49 +26,23 @@ preview: https://threejs-wolf-control.netlify.app/
 - **🖥 Responsive Design**: 
   - Works seamlessly across different screen sizes.
 
-## Getting Started
+***
 
-### Prerequisites
+# Three.js Office Scence (Vuejs)
+[English](./README.md) | [简体中文](./README_zh.md)
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+This project showcases a 3D office scene built using Vue.js and Three.js. It features interactive elements such as a rotating chair, animated video screens, and theme switching with dynamic lighting and material effects.
 
-### Installation
+## Features
 
-1. Clone the repository:
+preview: https://threejs-office-scene.netlify.app/
 
-    ```bash
-    git clone https://github.com/mooncat126/threejs-next-control-game.git
-    cd threejs-next-control-game
-    ```
+![画面収録 2024-08-18 20 08 15](https://github.com/user-attachments/assets/adcca174-7ddf-490a-8096-4383978885e1)
 
-2. Install dependencies:
 
-    ```bash
-    npm install
-    ```
-
-3. Run the development server:
-
-    ```bash
-    npm run dev
-    ```
-
-4. Open [http://localhost:3000](http://localhost:3000) to view the project locally.
-
-### Deployment
-
-This project is deployed on GitHub Pages. To deploy your own version:
-
-1. Update the `homepage` field in `package.json` with your repository details.
-2. Build and deploy:
-
-    ```bash
-    npm run deploy
-    ```
-
-Your project will be available at `https://mooncat126.github.io/threejs-next-control-game`.
-
-## License
-
-This project is licensed under the MIT License.
+- **💡 Controllable Lamp**: 
+  - click lamp to turn it on/off
+- **✨ 3D Environment**: 
+  - Includes a dynamic background and a ground plane.
+- **🖥 Responsive Design**: 
+  - Works seamlessly across different screen sizes.
