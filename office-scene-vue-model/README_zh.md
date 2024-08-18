@@ -7,7 +7,8 @@
 
 预览地址: https://threejs-office-scene.netlify.app/
 
-![画面収録 2024-08-18 20 08 15](https://github.com/user-attachments/assets/adcca174-7ddf-490a-8096-4383978885e1)
+![画面収録 2024-08-18 20 20 27](https://github.com/user-attachments/assets/2637131b-a274-4607-8080-8bacee3c5a19)
+
 
 - **💡 可控的台灯**: 
   - 点击台灯以打开或关闭
