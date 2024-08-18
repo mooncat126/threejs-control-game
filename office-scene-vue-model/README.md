@@ -5,12 +5,12 @@ This project showcases a 3D office scene built using Vue.js and Three.js. It fea
 
 ## Features
 
-preview: https://threejs-wolf-control.netlify.app/
+preview: https://threejs-office-scene.netlify.app/
 
-![画面収録 2024-08-16 22 11 27 (3)](https://github.com/user-attachments/assets/5b8fe404-d1e8-40a9-96a3-30e1be14f605)
+![画面収録 2024-08-18 20 08 15](https://github.com/user-attachments/assets/adcca174-7ddf-490a-8096-4383978885e1)
 
 
-- **🐺 Controllable Lamp**: 
+- **💡 Controllable Lamp**: 
   - click lamp to turn it on/off
 - **✨ 3D Environment**: 
   - Includes a dynamic background and a ground plane.
