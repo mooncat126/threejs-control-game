@@ -33,7 +33,7 @@ preview: https://threejs-wolf-control.netlify.app/
 
     ```bash
     git clone https://github.com/mooncat126/threejs-next-control-game.git
-    cd threejs-next-control-game
+    cd wolf-control-game
     ```
 
 2. Install dependencies:
@@ -60,8 +60,6 @@ This project is deployed on GitHub Pages. To deploy your own version:
     ```bash
     npm run deploy
     ```
-
-Your project will be available at `https://mooncat126.github.io/threejs-next-control-game`.
 
 ## License
 
