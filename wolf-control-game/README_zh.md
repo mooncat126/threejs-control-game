@@ -32,7 +32,7 @@
 
     ```bash
     git clone https://github.com/mooncat126/threejs-next-control-game.git
-    cd threejs-next-control-game
+    cd wolf-control-game
     ```
 
 2. 安装依赖项：
@@ -59,8 +59,6 @@
     ```bash
     npm run deploy
     ```
-
-你的项目将会部署在 `https://mooncat126.github.io/threejs-next-control-game`。
 
 ## 许可协议
 
