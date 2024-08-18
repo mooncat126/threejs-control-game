@@ -6,7 +6,7 @@
 
 ## 功能
 
-预览： preview: https://threejs-wolf-control.netlify.app/
+预览： https://threejs-wolf-control.netlify.app/
 
 ![画面収録 2024-08-16 22 11 27 (3)](https://github.com/user-attachments/assets/5b8fe404-d1e8-40a9-96a3-30e1be14f605)
 
