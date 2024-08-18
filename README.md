@@ -4,13 +4,13 @@ This repository is dedicated to storing various Three.js examples.
 Each example demonstrates different features and functionalities of Three.js in interactive 3D environments. 
 For more details, please refer to the README files in each folder.
 
-# Three.js Wolf Control Game
+## Three.js Wolf Control Game
 [English](./README.md) | [简体中文](./README_zh.md)
 
 An interactive 3D game built with Three.js and Next.js, featuring a controllable wolf model and various 3D objects.
 
 
-## Features
+### Features
 
 preview: https://threejs-wolf-control.netlify.app/
 
@@ -28,12 +28,12 @@ preview: https://threejs-wolf-control.netlify.app/
 
 ***
 
-# Three.js Office Scence (Vuejs)
+## Three.js Office Scence (Vuejs)
 [English](./README.md) | [简体中文](./README_zh.md)
 
 This project showcases a 3D office scene built using Vue.js and Three.js. It features interactive elements such as a rotating chair, animated video screens, and theme switching with dynamic lighting and material effects.
 
-## Features
+### Features
 
 preview: https://threejs-office-scene.netlify.app/
 
