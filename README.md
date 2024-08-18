@@ -1,8 +1,8 @@
 # Three.js Control Game Examples
 
-This repository is dedicated to storing various Three.js examples. 
-Each example demonstrates different features and functionalities of Three.js in interactive 3D environments. 
-For more details, please refer to the README files in each folder.
+This repository is dedicated to storing various Three.js examples. <br/>
+Each example demonstrates different features and functionalities of Three.js in interactive 3D environments. <br/>
+For more details, please refer to the README files in each folder.<br/>
 
 ## Three.js Wolf Control Game
 [English](./README.md) | [简体中文](./README_zh.md)
@@ -37,7 +37,8 @@ This project showcases a 3D office scene built using Vue.js and Three.js. It fea
 
 preview: https://threejs-office-scene.netlify.app/
 
-![画面収録 2024-08-18 20 08 15](https://github.com/user-attachments/assets/adcca174-7ddf-490a-8096-4383978885e1)
+
+![画面収録 2024-08-18 20 20 27](https://github.com/user-attachments/assets/2637131b-a274-4607-8080-8bacee3c5a19)
 
 
 - **💡 Controllable Lamp**: 
