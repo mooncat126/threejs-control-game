@@ -7,7 +7,7 @@ This project showcases a 3D office scene built using Vue.js and Three.js. It fea
 
 preview: https://threejs-office-scene.netlify.app/
 
-![画面収録 2024-08-18 20 20 27](https://github.com/user-attachments/assets/2637131b-a274-4607-8080-8bacee3c5a19)
+![画面収録 2024-08-18 22 01 12](https://github.com/user-attachments/assets/c72da59a-cf2c-4035-8c36-15284f110611)
 
 
 
