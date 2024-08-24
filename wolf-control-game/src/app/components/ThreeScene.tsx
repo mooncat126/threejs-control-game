@@ -1,257 +1,352 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 import { FBXLoader, OrbitControls } from "three-stdlib";
 
 const ThreeScene: React.FC = () => {
-  const mountRef = useRef<HTMLDivElement>(null); // 用于引用渲染器挂载的 DOM 元素
-  let mixer: THREE.AnimationMixer | null = null; // 动画混合器，用于处理模型动画
-  let wolf: THREE.Object3D | null = null; // 存储加载的狼模型对象
-  let actions: { [key: string]: THREE.AnimationAction } = {}; // 存储动画动作
-  let activeAction: THREE.AnimationAction | null = null; // 当前激活的动画动作
-  let isShiftPressed = false; // 用于跟踪 Shift 键是否按下
-  let isSitting = false; // 用于跟踪狼是否处于坐下状态
-  let isSpacePressed = false; // 用于跟踪空格键是否按下
+  const mountRef = useRef<HTMLDivElement>(null);
+  // 保存 requestAnimationFrame ID
+  const animationFrameIdRef = useRef<number | null>(null); 
 
-  useEffect(() => {
-    if (!mountRef.current) return;
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const wolfRef = useRef<THREE.Object3D | null>(null);
+  const actionsRef = useRef<{ [key: string]: THREE.AnimationAction }>({});
+  const activeActionRef = useRef<THREE.AnimationAction | null>(null);
+  const isShiftPressedRef = useRef(false);
+  const isSittingRef = useRef(false);
+  const isSpacePressedRef = useRef(false);
 
-    // 创建场景
+  // 初始化场景
+  const initScene = useCallback(() => {
     const scene = new THREE.Scene();
 
-    // 创建星星的小球体
-    const starGeometry = new THREE.SphereGeometry(0.1, 8, 8); // 定义小球体的几何形状
-    const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // 白色小球体材质
-    const stars = new THREE.InstancedMesh(starGeometry, starMaterial, 10000); // 创建 10000 个实例
+    const starGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const stars = new THREE.InstancedMesh(starGeometry, starMaterial, 10000);
 
-    // 随机设置小球体的位置
     const dummy = new THREE.Object3D();
     for (let i = 0; i < 10000; i++) {
-      const x = THREE.MathUtils.randFloatSpread(200);
-      const y = THREE.MathUtils.randFloatSpread(200);
-      const z = THREE.MathUtils.randFloatSpread(200);
-      dummy.position.set(x, y, z);
+      dummy.position.set(
+        THREE.MathUtils.randFloatSpread(200),
+        THREE.MathUtils.randFloatSpread(200),
+        THREE.MathUtils.randFloatSpread(200)
+      );
       dummy.updateMatrix();
       stars.setMatrixAt(i, dummy.matrix);
     }
-    scene.add(stars); // 将星星添加到场景中
+    scene.add(stars);
 
-    // 创建相机
+    return { scene, stars };
+  }, []);
+
+  // 初始化相机
+  const initCamera = useCallback(() => {
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    camera.position.set(20, 10, 50); // 设置相机位置
+    camera.position.set(20, 10, 50);
+    return camera as THREE.PerspectiveCamera;
+  }, []);
 
-    // 创建渲染器
+  // 初始化渲染器，并根据设备性能自动调整分辨率
+  const initRenderer = useCallback(() => {
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight); // 设置渲染器大小
-    renderer.setClearColor(0x000000, 1); // 设置背景颜色
-    mountRef.current.appendChild(renderer.domElement); // 将渲染器的 DOM 元素添加到页面中
+    const pixelRatio = Math.min(window.devicePixelRatio, 2); // 设备像素比，最高为2
+    renderer.setPixelRatio(pixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    return renderer;
+  }, []);
 
-    // 创建轨道控制器
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // 启用阻尼效果
-    controls.dampingFactor = 0.25; // 阻尼系数
-    controls.enableZoom = true; // 启用缩放
-    controls.minPolarAngle = Math.PI / 6; // 最小极角
-    controls.maxPolarAngle = Math.PI / 2; // 最大极角
+  // 初始化控制器
+  const initControls = useCallback(
+    (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.25;
+      controls.enableZoom = true;
+      controls.minPolarAngle = Math.PI / 6;
+      controls.maxPolarAngle = Math.PI / 2;
+      return controls;
+    },
+    []
+  );
 
-    // 添加光源
-    const light = new THREE.DirectionalLight(0xffffff, 4); // 创建方向光
-    light.position.set(1, 1, 1).normalize(); // 设置光源位置
-    scene.add(light);
+  // 初始化光源
+  const initLights = useCallback((scene: THREE.Scene) => {
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 2); // 创建环境光
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
+  }, []);
 
-    // 添加辅助网格和坐标轴
+  // 初始化辅助网格和坐标轴
+  const initHelpers = useCallback((scene: THREE.Scene) => {
     const gridHelper = new THREE.GridHelper(200, 200);
     scene.add(gridHelper);
 
     const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
+  }, []);
 
-    // 创建地面
+  // 初始化地面
+  const initGround = useCallback((scene: THREE.Scene) => {
     const groundGeometry = new THREE.PlaneGeometry(200, 200);
     const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2; // 将地面旋转为水平
-    ground.position.y = -0.5; // 设置地面位置
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
     scene.add(ground);
+  }, []);
 
-    // 创建加载管理器
+  // 延迟加载模型
+  const loadModels = useCallback((scene: THREE.Scene) => {
     const loadingManager = new THREE.LoadingManager();
     loadingManager.onStart = () => console.log("Started loading model");
     loadingManager.onLoad = () => console.log("Loading complete");
     loadingManager.onError = () => console.error("Error loading model");
 
-    // 加载并添加第一个 house FBX 模型
-    const loader1 = new FBXLoader(loadingManager);
-    loader1.load("/models/house1/Big_Old_House.fbx", (object) => {
-      object.scale.set(0.035, 0.035, 0.035); // 缩放模型
-      object.position.set(2, 0, 0); // 设置模型位置
-      scene.add(object);
-      console.log("Big_Old_House loaded");
-    });
+    const loader = new FBXLoader(loadingManager);
 
-    // 加载并添加第二个 house FBX 模型
-    const loader2 = new FBXLoader(loadingManager);
-    loader2.load("/models/house2/City_House_2_BI.fbx", (object) => {
-      object.scale.set(3, 3, 3);
-      object.position.set(18, 0, 0);
-      object.rotation.set(Math.PI / 2, Math.PI, Math.PI);
-      scene.add(object);
-      console.log("City_House_2_BI loaded");
-    });
-
-    // 加载并添加第三个 wolf FBX 模型（狼）
-    const loader3 = new FBXLoader(loadingManager);
-    loader3.load("/models/wolf/Wolf.fbx", (object) => {
-      wolf = object;
-      wolf.scale.set(0.08, 0.08, 0.08);
-      wolf.position.set(30, 0, 0);
-      scene.add(wolf);
-      console.log("Wolf model loaded");
-
-      // 创建动画混合器并处理动画
-      mixer = new THREE.AnimationMixer(wolf);
-      if (object.animations.length > 0) {
-        object.animations.forEach((clip) => {
-          const action = mixer!.clipAction(clip);
-          actions[clip.name] = action;
-        });
-
-        activeAction = actions["Wolf_Skeleton|Wolf_Idle_"];
-        if (activeAction) activeAction.play();
-      }
-    });
-
-    // 动画循环
-    const clock = new THREE.Clock();
-    const animate = () => {
-      requestAnimationFrame(animate);
-
-      const delta = clock.getDelta();
-      if (mixer) mixer.update(delta); // 更新动画
-
-      stars.rotation.y += 0.0005; // 使星空慢慢旋转
-
-      controls.update();
-      renderer.render(scene, camera);
+    const loadModel = (
+      path: string,
+      scale: THREE.Vector3,
+      position: THREE.Vector3,
+      rotation?: THREE.Euler
+    ) => {
+      loader.load(path, (object) => {
+        object.scale.copy(scale);
+        object.position.copy(position);
+        if (rotation) object.rotation.copy(rotation);
+        scene.add(object);
+        console.log(`${path} loaded`);
+      });
     };
 
-    animate();
+    loadModel(
+      "/models/house1/Big_Old_House.fbx",
+      new THREE.Vector3(0.035, 0.035, 0.035),
+      new THREE.Vector3(2, 0, 0)
+    );
+    loadModel(
+      "/models/house2/City_House_2_BI.fbx",
+      new THREE.Vector3(3, 3, 3),
+      new THREE.Vector3(18, 0, 0),
+      new THREE.Euler(Math.PI / 2, Math.PI, Math.PI)
+    );
 
-    // 切换动画动作
-    const switchAction = (newAction: THREE.AnimationAction | null, loop: boolean = true) => {
-      if (activeAction && newAction !== activeAction) {
-        activeAction.fadeOut(0.2); // 渐出当前动作
+    loader.load("/models/wolf/Wolf.fbx", (object) => {
+      wolfRef.current = object;
+      wolfRef.current.scale.set(0.08, 0.08, 0.08);
+      wolfRef.current.position.set(30, 0, 0);
+      scene.add(wolfRef.current);
+      console.log("Wolf model loaded");
+
+      mixerRef.current = new THREE.AnimationMixer(wolfRef.current);
+      if (object.animations.length > 0) {
+        object.animations.forEach((clip) => {
+          const action = mixerRef.current!.clipAction(clip);
+          actionsRef.current[clip.name] = action;
+        });
+
+        activeActionRef.current =
+          actionsRef.current["Wolf_Skeleton|Wolf_Idle_"];
+        if (activeActionRef.current) activeActionRef.current.play();
+      }
+    });
+  }, []);
+
+  // 动画循环
+  const animate = useCallback(
+    (
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      controls: OrbitControls,
+      stars: THREE.InstancedMesh
+    ) => {
+      const clock = new THREE.Clock();
+
+      const render = () => {
+        // 在渲染前，存储 animation frame ID
+        animationFrameIdRef.current = requestAnimationFrame(render);
+
+        const delta = clock.getDelta();
+        if (mixerRef.current) mixerRef.current.update(delta);
+
+        stars.rotation.y += 0.0005;
+
+        controls.update();
+        renderer.render(scene, camera);
+      };
+
+      render();
+    },
+    []
+  );
+
+  // 获取移动相关的动画动作
+  const getActionForMovement = useCallback(() => {
+    return isShiftPressedRef.current
+      ? actionsRef.current["Wolf_Skeleton|Wolf_Run_Cycle_"]
+      : actionsRef.current["Wolf_Skeleton|Wolf_Walk_cycle_"];
+  }, []);
+
+  // 切换动画动作
+  const switchAction = useCallback(
+    (newAction: THREE.AnimationAction | null, loop: boolean = true) => {
+      if (activeActionRef.current && newAction !== activeActionRef.current) {
+        activeActionRef.current.fadeOut(0.2);
       }
       if (newAction) {
-        newAction.reset().fadeIn(0.2).play(); // 渐入新动作并播放
+        newAction.reset().fadeIn(0.2).play();
         newAction.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce;
         newAction.clampWhenFinished = !loop;
       }
-      activeAction = newAction;
-    };
+      activeActionRef.current = newAction;
+    },
+    []
+  );
 
-    // 处理键盘按下事件
-    const handleKeyDown = (event: KeyboardEvent) => {
+  // 处理键盘按下事件
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const wolf = wolfRef.current;
       if (!wolf) return;
-      let moveSpeed = isShiftPressed ? 5 : 2;
+      const moveSpeed = isShiftPressedRef.current ? 5 : 2;
 
       switch (event.key) {
         case "Shift":
-          isShiftPressed = true;
+          isShiftPressedRef.current = true;
           break;
         case "ArrowDown":
           wolf.position.z += moveSpeed;
           wolf.rotation.y = 0;
-          switchAction(
-            isShiftPressed
-              ? actions["Wolf_Skeleton|Wolf_Run_Cycle_"]
-              : actions["Wolf_Skeleton|Wolf_Walk_cycle_"]
-          );
+          switchAction(getActionForMovement());
           break;
         case "ArrowUp":
           wolf.position.z -= moveSpeed;
           wolf.rotation.y = Math.PI;
-          switchAction(
-            isShiftPressed
-              ? actions["Wolf_Skeleton|Wolf_Run_Cycle_"]
-              : actions["Wolf_Skeleton|Wolf_Walk_cycle_"]
-          );
+          switchAction(getActionForMovement());
           break;
         case "ArrowLeft":
           wolf.position.x -= moveSpeed;
           wolf.rotation.y = -Math.PI / 2;
-          switchAction(
-            isShiftPressed
-              ? actions["Wolf_Skeleton|Wolf_Run_Cycle_"]
-              : actions["Wolf_Skeleton|Wolf_Walk_cycle_"]
-          );
+          switchAction(getActionForMovement());
           break;
         case "ArrowRight":
           wolf.position.x += moveSpeed;
           wolf.rotation.y = Math.PI / 2;
-          switchAction(
-            isShiftPressed
-              ? actions["Wolf_Skeleton|Wolf_Run_Cycle_"]
-              : actions["Wolf_Skeleton|Wolf_Walk_cycle_"]
-          );
+          switchAction(getActionForMovement());
           break;
         case " ":
-          if (!isSpacePressed) {
-            isSpacePressed = true;
-            isSitting = !isSitting;
-            if (isSitting) {
-              switchAction(actions["Wolf_Skeleton|Wolf_seat_"], false);
+          if (!isSpacePressedRef.current) {
+            isSpacePressedRef.current = true;
+            isSittingRef.current = !isSittingRef.current;
+            if (isSittingRef.current) {
+              switchAction(
+                actionsRef.current["Wolf_Skeleton|Wolf_seat_"],
+                false
+              );
             } else {
-              switchAction(actions["Wolf_Skeleton|Wolf_Idle_"]);
+              switchAction(actionsRef.current["Wolf_Skeleton|Wolf_Idle_"]);
             }
           }
           break;
         default:
-          switchAction(actions["Wolf_Skeleton|Wolf_Idle_"]);
+          switchAction(actionsRef.current["Wolf_Skeleton|Wolf_Idle_"]);
           break;
       }
-    };
+    },
+    [switchAction, getActionForMovement]
+  );
 
-    // 处理键盘松开事件
-    const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === "Shift") {
-        isShiftPressed = false;
-      }
-      if (event.key === " ") {
-        isSpacePressed = false;
-      }
-    };
+  // 处理键盘松开事件
+  const handleKeyUp = useCallback((event: KeyboardEvent) => {
+    if (event.key === "Shift") {
+      isShiftPressedRef.current = false;
+    }
+    if (event.key === " ") {
+      isSpacePressedRef.current = false;
+    }
+  }, []);
 
-    // 添加事件监听器
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+  // 处理窗口大小调整
+  const handleResize = useCallback(
+    (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {
+      return () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      };
+    },
+    []
+  );
 
-    // 处理窗口大小调整
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
+  // 事件监听器和清理函数统一管理
+  const addEventListeners = useCallback(
+    (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+      window.addEventListener("resize", handleResize(camera, renderer));
+    },
+    [handleKeyDown, handleKeyUp, handleResize]
+  );
 
-    window.addEventListener("resize", handleResize);
+  const removeEventListeners = useCallback(
+    (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("resize", handleResize(camera, renderer));
+    },
+    [handleKeyDown, handleKeyUp, handleResize]
+  );
+
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    const { scene, stars } = initScene();
+    const camera = initCamera();
+    const renderer = initRenderer();
+    const controls = initControls(camera, renderer);
+    initLights(scene);
+    initHelpers(scene);
+    initGround(scene);
+    loadModels(scene);
+
+    mountRef.current.appendChild(renderer.domElement);
+
+    animate(renderer, scene, camera, controls, stars);
+    addEventListeners(camera, renderer);
 
     // 清理副作用
     return () => {
+      // 取消未完成的动画帧
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+      }
       if (mountRef.current) mountRef.current.removeChild(renderer.domElement);
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      removeEventListeners(camera, renderer);
     };
-  }, []);
+  }, [
+    initScene,
+    initCamera,
+    initRenderer,
+    initControls,
+    initLights,
+    initHelpers,
+    initGround,
+    loadModels,
+    animate,
+    addEventListeners,
+    removeEventListeners,
+  ]);
 
   return <div ref={mountRef} style={{ width: "100vw", height: "100vh" }} />;
 };
